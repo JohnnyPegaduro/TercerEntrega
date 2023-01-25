@@ -245,7 +245,7 @@ homeRouter.get("/whatsapp", async (req, res) => {
     const email = req.user.username;
     await client.messages.create({
       body: `Nuevo pedido de ${name} - email: ${email}`,
-      from: "whatsapp:`+14582434892",
+      from: "whatsapp:`+14155238886",
       to: `whatsapp:`+ process.env.PHONE,
     });
    
