@@ -10,24 +10,27 @@ class ContenedorMongoDb {
     this.col = mongoose.model(coleccion, esquema);
   }
 
+  // Traer todos los documentos de la BD
   async getAll() {
     try {
       const objets = await this.col.find();
       return objets;
     } catch (err) {
-      logger.error(`Error en Ruta Get: ${err}`);
+      logger.error(`Error- ContMongo - Funcion getAll: ${err}`);
     }
   }
 
+  // Traer un documento correspondiente a  un id
   async getById(id) {
     try {
       const objets = await this.col.findOne({ _id: id });
       return objets;
     } catch (err) {
-      logger.error(`Error en Ruta get by Id: ${err}`);
+      logger.error(`Error- ContMongo - Funcion getById: ${err}`);
     }
   }
 
+  // Guardar un documento
   async save(objet) {
     try {
       await this.col.create(objet);
@@ -37,15 +40,15 @@ class ContenedorMongoDb {
         .limit(1);
       return newId;
     } catch (err) {
-      logger.error(`Error en Ruta post: ${err}`);
+      logger.error(`Error- ContMongo - Funcion save: ${err}`);
     }
   }
 
+  // Actaulizar documento por Id
   async changeById(elem) {
     const { id } = elem;
     try {
       const found = await this.col.find({ _id: id });
-
       if (!found) {
         found = null;
       } else {
@@ -53,10 +56,11 @@ class ContenedorMongoDb {
       }
       return found;
     } catch (err) {
-      logger.error(`Error en Ruta change by ID: ${err}`);
+      logger.error(`Error- ContMongo - Funcion changeById: ${err}`);
     }
   }
 
+  //  Borrar documento por Id
   async deleteById(id) {
     let found = await this.col.find({ _id: id });
     try {
@@ -67,7 +71,7 @@ class ContenedorMongoDb {
       }
       return found;
     } catch (err) {
-      logger.error(`Error en Ruta delete by Id: ${err}`);
+      logger.error(`Error- ContMongo - Funcion deleteById: ${err}`);
     }
   }
 }

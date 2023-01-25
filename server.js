@@ -68,7 +68,6 @@ app.all("*", (req, res) => {
   res.send({ error: true }).status(500);
 });
 
-
 // INICIO SERVIDOR -----------------------------------
 const options = {
   alias: {
@@ -81,7 +80,7 @@ const options = {
 
 const argv = process.argv.slice(2);
 const { MODO } = ParsedArgs(argv, options);
-const PORT = process.env.PORT || 8080
+const PORT = process.env.PORT || 8080;
 
 if (MODO === "CLUSTER") {
   if (cluster.isPrimary) {

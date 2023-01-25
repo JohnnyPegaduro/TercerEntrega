@@ -3,7 +3,7 @@ import ContenedorMongoDB from "../../contenedores/contenedorMongoDb.js";
 import logger from "../../config/configLoggers.js";
 
 const products = new Schema({
-  id: { type: String, required: true },
+  id_prod: { type: String, required: true },
   timestamp: { type: Date, required: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
@@ -23,6 +23,7 @@ class CarritoDaoMongoDb extends ContenedorMongoDB {
     });
   }
 
+  // Guardar un Producto en un Carrito Puntual
   async saveProducts(
     id,
     id_prod,
@@ -50,10 +51,11 @@ class CarritoDaoMongoDb extends ContenedorMongoDB {
         { $push: { products: newProduct } }
       );
     } catch (err) {
-      logger.error(`Error en Api Carritos: ${err}`);
+      logger.error(`Error- DaoCartMongo - Funcion save: ${err}`);
     }
   }
 
+  // Borrar un Producto de un Carrito Puntual
   async deleteProdById(id, id_prod) {
     try {
       await this.col.updateOne(
@@ -61,10 +63,11 @@ class CarritoDaoMongoDb extends ContenedorMongoDB {
         { $pull: { products: { _id: id_prod } } }
       );
     } catch (err) {
-      logger.error(`Error en Api Carritos: ${err}`);
+      logger.error(`Error- DaoCartMongo - Funcion deleteProdById: ${err}`);
     }
   }
 
+  // Buscar un Carrito no Finalizado p/ un Usuario
   async getCarritoByUsuario(id) {
     try {
       const objets = await this.col.findOne({
@@ -72,7 +75,23 @@ class CarritoDaoMongoDb extends ContenedorMongoDB {
       });
       return objets;
     } catch (err) {
-      logger.error(`Error en Api Carritos: ${err}`);
+      logger.error(`Error- DaoCartMongo - Funcion getCarritoByUsuario: ${err}`);
+    }
+  }
+
+  // Actualizar Finalizado = true al finalizar una compra
+  async updateFinalizarCarritoBy(id) {
+    try {
+      await this.col.updateOne(
+        {
+          $and: [{ id_user: id }, { finCompra: false }],
+        },
+        { $set: { finCompra: true } }
+      );
+    } catch (err) {
+      logger.error(
+        `Error- DaoCartMongo - Funcion updateFinalizarCarritoByUsuario: ${err}`
+      );
     }
   }
 }

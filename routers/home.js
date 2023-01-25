@@ -4,11 +4,15 @@ import path, { dirname, extname, join } from "path";
 import bcrypt from "bcrypt";
 import multer from "multer";
 
+import { transporter } from "../config/configNodemailer.js";
+import { client } from "../config/configTwilio.js"
+
 import * as dotenv from "dotenv";
 dotenv.config();
 
 const host = process.env.HOST;
 const port = process.env.PORT;
+const email_admin = process.env.EMAIL_ADMIN;
 
 import passport from "passport";
 import { Strategy } from "passport-local";
@@ -18,7 +22,6 @@ import { fileURLToPath } from "url";
 const homeRouter = new Router();
 
 //MULTER ----------------------------
-
 const CURRENT_DIR = dirname(fileURLToPath(import.meta.url));
 const MIMETYPES = ["image/jpg", "image/png"];
 
@@ -111,6 +114,7 @@ const authMw = (req, res, next) => {
 
 //RUTAS ------------------------------
 
+// Mostrar home
 homeRouter.get("/", (req, res) => {
   if (req.isAuthenticated()) {
     const name = req.user.name;
@@ -122,6 +126,7 @@ homeRouter.get("/", (req, res) => {
   }
 });
 
+// Mostrar formulario login
 homeRouter.get("/login", (req, res) => {
   if (req.isAuthenticated()) {
     res.redirect("/");
@@ -130,23 +135,49 @@ homeRouter.get("/login", (req, res) => {
   }
 });
 
+// Mostrar formulario registro
 homeRouter.get("/signup", (req, res) => {
   res.render(path.join(process.cwd(), "/views/pages/register.ejs"), {
     okRegister: " ",
   });
 });
 
+// Registar Usuario
 homeRouter.post(
   "/signup",
   upload.single("myFile"),
   passport.authenticate("signup", { failureRedirect: "/errorRegister" }),
-  (req, res, next) => {
+  async (req, res, next) => {
     res.render(path.join(process.cwd(), "/views/pages/register.ejs"), {
       okRegister: "¡Usuario registrado con éxito! Puede iniciar sesión",
     });
+    // Envío Email
+    const name = req.user.name;
+    const direccion = req.user.address;
+    const edad = req.user.age;
+    const email = req.user.username;
+    const telefono = req.user.phone;
+    try {
+      await transporter.sendMail({
+        from: "mia90@ethereal.email",
+        to: email_admin,
+        subject: "Nuevo Registro",
+        html: `<h4>Datos del Usuario</h4>
+      <ul>
+        <li>Nombre: ${name}</li>
+        <li>Dirección: ${direccion}</li>
+        <li>Edad: ${edad}</li>
+        <li>Email: ${email}</li>
+        <li>Telefono: ${telefono}</li>
+                                                  </ul>`,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 );
 
+// Loguear Usuario
 homeRouter.post(
   "/login",
   passport.authenticate("login", { failureRedirect: "/errorLogin" }),
@@ -155,15 +186,18 @@ homeRouter.post(
   }
 );
 
+// Traer Info del Usuario
 homeRouter.get("/datos", authMw, (req, res) => {
   res.send({ data: req.user });
 });
 
+// Mostrar Carrito de Usuario Logueado
 homeRouter.get("/carrito", authMw, (req, res) => {
   const name = req.user.name;
   res.render("pages/carrito.ejs", { name: name });
 });
 
+// Mostrar Datos de Usuario Logueado
 homeRouter.get("/cuenta", authMw, (req, res) => {
   const name = req.user.name;
   const imagen = req.user.imgUrl;
@@ -172,16 +206,55 @@ homeRouter.get("/cuenta", authMw, (req, res) => {
   const email = req.user.username;
   const telefono = req.user.phone;
 
-  res.render("pages/cuenta.ejs", { name,
+  res.render("pages/cuenta.ejs", {
+    name,
     imagen,
     nombre: name,
     direccion,
     edad,
     email,
     telefono,
-    });
+  });
 });
 
+// Traer Usuario Logueado
+homeRouter.get("/idUsuario", (req, res) => {
+  const idUsuario = req.user._id;
+  res.send(idUsuario);
+});
+
+// Envío de Mensaje al Usuario Pedido en Proceso
+homeRouter.get("/email", async (req, res) => {
+  try {
+    const numUsuario = req.user.phone;
+    await client.messages.create({
+      body: "Su pedido ha sido recibido y se encuentra en proceso",
+      from: "+14582434892",
+      to: numUsuario,
+    });
+   
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Envío de Whatsapp al Administrador
+homeRouter.get("/whatsapp", async (req, res) => {
+  try {
+    const name = req.user.name;
+    const email = req.user.username;
+    await client.messages.create({
+      body: `Nuevo pedido de ${name} - email: ${email}`,
+      from: "whatsapp:`+14582434892",
+      to: `whatsapp:`+ process.env.PHONE,
+    });
+   
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Vista Logout Usuario
 homeRouter.get("/logout", (req, res) => {
   const name = req.user.name;
   req.logout((err) => {
@@ -192,17 +265,14 @@ homeRouter.get("/logout", (req, res) => {
   });
 });
 
+// Vista Error Login
 homeRouter.get("/errorLogin", (req, res) => {
   res.render(path.join(process.cwd(), "/views/pages/errorLogin.ejs"));
 });
 
+// Vista Error Registro
 homeRouter.get("/errorRegister", (req, res) => {
   res.render(path.join(process.cwd(), "/views/pages/errorRegister.ejs"));
-});
-
-homeRouter.get("/idUsuario", (req, res) => {
-  const idUsuario = req.user._id;
-  res.send(idUsuario);
 });
 
 export default homeRouter;
