@@ -229,7 +229,7 @@ homeRouter.get("/email", async (req, res) => {
     const numUsuario = req.user.phone;
     await client.messages.create({
       body: "Su pedido ha sido recibido y se encuentra en proceso",
-      from: "+14582434892",
+      from: "+14155238886",
       to: numUsuario,
     });
    
