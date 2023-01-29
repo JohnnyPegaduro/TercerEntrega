@@ -3,9 +3,12 @@ import { Router } from "express";
 import path, { dirname, extname, join } from "path";
 import bcrypt from "bcrypt";
 import multer from "multer";
+import passport from "passport";
+import { Strategy } from "passport-local";
+import { fileURLToPath } from "url";
 
+import { Users } from "../config/configMongoDb.js";
 import { transporter } from "../config/configNodemailer.js";
-import { client } from "../config/configTwilio.js"
 
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -13,11 +16,6 @@ dotenv.config();
 const host = process.env.HOST;
 const port = process.env.PORT;
 const email_admin = process.env.EMAIL_ADMIN;
-
-import passport from "passport";
-import { Strategy } from "passport-local";
-import { Users } from "../config/configMongoDb.js";
-import { fileURLToPath } from "url";
 
 const homeRouter = new Router();
 
@@ -198,7 +196,7 @@ homeRouter.get("/carrito", authMw, (req, res) => {
 });
 
 // Mostrar Datos de Usuario Logueado
-homeRouter.get("/cuenta", authMw, (req, res) => {
+homeRouter.get("/cuenta", (req, res) => {
   const name = req.user.name;
   const imagen = req.user.imgUrl;
   const direccion = req.user.address;
@@ -221,37 +219,6 @@ homeRouter.get("/cuenta", authMw, (req, res) => {
 homeRouter.get("/idUsuario", (req, res) => {
   const idUsuario = req.user._id;
   res.send(idUsuario);
-});
-
-// Envío de Mensaje al Usuario Pedido en Proceso
-homeRouter.get("/email", async (req, res) => {
-  try {
-    const numUsuario = req.user.phone;
-    await client.messages.create({
-      body: "Su pedido ha sido recibido y se encuentra en proceso",
-      from: "+14155238886",
-      to: numUsuario,
-    });
-   
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-// Envío de Whatsapp al Administrador
-homeRouter.get("/whatsapp", async (req, res) => {
-  try {
-    const name = req.user.name;
-    const email = req.user.username;
-    await client.messages.create({
-      body: `Nuevo pedido de ${name} - email: ${email}`,
-      from: "whatsapp:`+14155238886",
-      to: `whatsapp:`+ process.env.PHONE,
-    });
-   
-  } catch (err) {
-    console.log(err);
-  }
 });
 
 // Vista Logout Usuario

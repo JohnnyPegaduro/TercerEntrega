@@ -1,12 +1,15 @@
 import mongoose from "mongoose";
 import Config from "../config/configDao.js";
 import logger from "../config/configLoggers.js";
+import ContenedorFactory from "./ContenedorFactory.js";
 
 mongoose.set("strictQuery", true);
 await mongoose.connect(Config.mongodb.cnxStr);
 
-class ContenedorMongoDb {
+class ContenedorMongoDb extends ContenedorFactory {
   constructor(coleccion, esquema) {
+    super(coleccion);
+
     this.col = mongoose.model(coleccion, esquema);
   }
 

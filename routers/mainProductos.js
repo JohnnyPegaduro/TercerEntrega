@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { ProductosDao } from "../daos/index.js";
+import DAOFactory from "../daos/DAOFactory.js";
+import ProductDTO from "../dto/productosDto.js"
 
 const router = Router();
-const productsArte = ProductosDao;
+const productsArte = DAOFactory.getProductosDAO();
 
 const admin = true;
 
@@ -19,10 +20,12 @@ const authAdmin = (req, res, next) => {
   }
 };
 
-router.get("/", async (req, res) => {
+  
+  router.get("/", async (req, res) => {
   try {
     const products = await productsArte.getAll();
-    res.send(products);
+    const productsDto = products.map((product) => ProductDTO(product));
+    res.send(productsDto);
   } catch (error) {
     res.send({ error: true });
   }

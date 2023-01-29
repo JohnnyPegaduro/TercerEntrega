@@ -12,7 +12,7 @@ const Config = {
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-sm5yj%40ecommercedb-backend-d9d0e.iam.gserviceaccount.com"
   },
     mongodb: { 
-      cnxStr: "mongodb+srv://Johnny:4321@codercluster.nvlvgso.mongodb.net/ecommerce?retryWrites=true&w=majority", 
+      cnxStr: "mongodb://127.0.0.1:27017/ecommerce", 
   },
 };
 

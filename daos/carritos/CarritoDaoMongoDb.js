@@ -1,13 +1,13 @@
 import { Schema } from "mongoose";
-import ContenedorMongoDB from "../../contenedores/contenedorMongoDb.js";
+import ContenedorMongoDB from "../../contenedores/ContenedorMongoDB.js";
 import logger from "../../config/configLoggers.js";
 
 const products = new Schema({
   id_prod: { type: String, required: true },
-  timestamp: { type: Date, required: true },
+  timestamp: { type: Date, required: false },
   title: { type: String, required: true },
   description: { type: String, required: true },
-  code: { type: Number, required: true },
+  code: { type: Number, required: false },
   thumbnail: { type: String, required: true },
   price: { type: Number, required: true },
   stock: { type: Number, required: true },

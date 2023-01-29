@@ -67,10 +67,13 @@ const pintarProdCarrito = () => {
   prodCarrito.appendChild(fragment);
 
   const cartMedida = carritoObjeto.length;
-  if (cartMedida > 0) {
+  if (cartMedida === 0 ) {
+    pieCarrito.textContent = "Carrito Vacío - Comienza a Comprar"
+  } else {
     const clone = templatePieCarrito.cloneNode(true);
     fragment.appendChild(clone);
     pieCarrito.appendChild(fragment);
+    
   }
 };
 
@@ -97,7 +100,7 @@ const fetchEliminarProducto = async (objeto) => {
 
 //Boton Finalizar Compra
 document.addEventListener("click", (e) => {
-  if (e.target.matches(".btn-dark")) {
+  if (e.target.matches(".list-group-item .btn-secondary")) {
     fetchFinalizarCompra();
   }
   e.stopPropagation();
@@ -105,12 +108,12 @@ document.addEventListener("click", (e) => {
 
 // Finalizar Compra
 const fetchFinalizarCompra = async () => {
-   try {
+  console.log(`Id usuario: ${idUser}`);
+  try {
     const res = await fetch(`/api/carrito/finalizar/${idUser}`, {
       method: "PUT",
     });
-    await fetch(`/email`, {method: "GET",});
-    await fetch(`/whatsapp`, {method: "GET",});
+    fetchMostrarCarrito();
   } catch (error) {
     console.log(error);
   }

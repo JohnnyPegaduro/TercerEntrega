@@ -1,11 +1,25 @@
 import { Router } from "express";
-import { CarritosDao } from "../daos/index.js";
+import DAOFactory from "../daos/DAOFactory.js";
 import logger from "../config/configLoggers.js";
 
+import { client } from "../config/configTwilio.js";
+import { transporter } from "../config/configNodemailer.js";
+
+import CartDTO from "../dto/cartDto.js"
+
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const email_admin = process.env.EMAIL_ADMIN;
+const phone_admin = process.env.PHONE_ADMIN;
+
 const router = Router();
+const carsArte = DAOFactory.getCarritosDAO();
 
-const carsArte = CarritosDao;
-
+//AUTENTICACIÓN ------------------
+const authMw = (req, res, next) => {
+  req.isAuthenticated() ? next() : res.send({ error: "sin session" });
+};
 
 // Ruta Agregar Carrito p/ Usuario
 router.post("/:idUser", async (req, res) => {
@@ -15,7 +29,7 @@ router.post("/:idUser", async (req, res) => {
     const id_user = idUser;
     const products = [];
     const newId = await carsArte.save({ timestamp, id_user, products });
-    res.send("El Id del nuevo carrito es:" + " " + newId);
+    res.send({ IdNewCarrito: newId });
   } catch (err) {
     logger.error(`Error- MainCarrito - Ruta Post Carrito: ${err}`);
   }
@@ -39,6 +53,8 @@ router.get("/:id/productos", async (req, res) => {
     let found = await carsArte.getById(id);
     if (found) {
       const { products } = found;
+      const totalCarrito = CartDTO(products);
+      console.log(totalCarrito);
       res.send(products);
     } else {
       logger.error(
@@ -109,19 +125,44 @@ router.get("/idCarrito/:id_user", async (req, res) => {
   }
 });
 
-
 router.put("/finalizar/:id_user", async (req, res) => {
   try {
     const { id_user } = req.params;
+    const name = req.user.name;
+    const email = req.user.username;
+    const telephone = req.user.phone;
+
     await carsArte.updateFinalizarCarritoBy(id_user);
-    res.send("Carrito Finalizado");
+
+    // Envío de Email al Usuario  del Pedido en Proceso
+    await transporter.sendMail({
+      from: "mia90@ethereal.email",
+      to: email_admin,
+      subject: `Nuevo pedido de ${name} - email: ${email}`,
+      html: `<h4>Nuevo Pedido</h4>
+           <ul>
+              <li>Pedido del Usuario</li>
+          </ul>`,
+    });
+
+    // Envío de Mensaje al Usuario Pedido en Proceso
+    await client.messages.create({
+      body: "Su pedido ha sido recibido y se encuentra en proceso",
+      from: "+15392243445",
+      to: `+${telephone}`,
+    });
+
+    // Envío de Whatsapp al Administrador
+    await client.messages.create({
+      body: `Nuevo pedido de ${name} - email: ${email}`,
+      from: "whatsapp:+15392243445",
+      to: `whatsapp:+${phone_admin}`,
+    });
   } catch (err) {
     logger.error(
       `Error- MainCarrito - Ruta Actualizar Carrito Finalizar true: ${err}`
     );
   }
 });
-
-
 
 export default router;

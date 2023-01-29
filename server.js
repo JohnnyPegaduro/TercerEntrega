@@ -41,7 +41,7 @@ app.use(
   session({
     store: MongoStore.create({
       mongoUrl:
-      "mongodb+srv://Johnny:4321@codercluster.nvlvgso.mongodb.net/ecommerce?retryWrites=true&w=majority",
+      "mongodb://127.0.0.1:27017/ecommerce",
       //ttl: 600000
     }),
 
