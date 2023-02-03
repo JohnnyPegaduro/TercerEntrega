@@ -140,9 +140,9 @@ router.put("/finalizar/:id_user", async (req, res) => {
       to: email_admin,
       subject: `Nuevo pedido de ${name} - email: ${email}`,
       html: `<h4>Nuevo Pedido</h4>
-           <ul>
+            <ul>
               <li>Pedido del Usuario</li>
-          </ul>`,
+            </ul>`,
     });
 
     // Envío de Mensaje al Usuario Pedido en Proceso

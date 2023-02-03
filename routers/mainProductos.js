@@ -45,7 +45,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", authAdmin, async (req, res) => {
+router.post("/", async (req, res) => {
   const timestamp = new Date();
   try {
     const { title, description, code, thumbnail, price, stock } = req.body;
